@@ -10,7 +10,7 @@ pub fn run_sketch() {
 }
 
 struct Model {
-    kinematic_arm: Arm<3>,
+    kinematic_arm: Arm,
     target: (f32, f32),
     mouse_held: bool,
 }
@@ -23,11 +23,12 @@ fn model(app: &App) -> Model {
         .view(view)
         .mouse_pressed(draw_press)
         .mouse_released(draw_released)
+        .key_pressed(key_press)
         .build()
         .unwrap();
 
     Model {
-        kinematic_arm: Arm::new([50., 50., 100.]),
+        kinematic_arm: Arm::new([100., 50., 50.]),
         target: (0., 0.),
         mouse_held: false,
     }
@@ -58,7 +59,7 @@ fn view(app: &App, model: &Model, frame: Frame) {
         let x_projection = length * theta_sum.cos();
         let y_projection = length * theta_sum.sin();
 
-        let segment_rect = Rect::from_w_h(*length, 25.)
+        let segment_rect = Rect::from_w_h(*length, 20.)
             .middle_of(app.window_rect())
             .shift_x(x_offset + x_projection / 2.)
             .shift_y(y_offset + y_projection / 2.);
@@ -91,6 +92,19 @@ fn view(app: &App, model: &Model, frame: Frame) {
         .x_y(model.target.0, model.target.1);
 
     draw.to_frame(app, &frame).unwrap();
+}
+
+fn key_press(_: &App, model: &mut Model, key: Key) {
+	match key {
+		Key::Space => {
+			model.kinematic_arm.push_segment(50.);
+		}
+		Key::Back => {
+			model.kinematic_arm.pop_segment();
+
+		}
+		_ => ()
+	}
 }
 
 fn draw_press(_: &App, model: &mut Model, mouse: MouseButton) {

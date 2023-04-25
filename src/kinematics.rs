@@ -1,14 +1,20 @@
+use std::f32::consts::{PI, TAU};
+
+const DEG_TO_RAD: f32 = PI / 180.;
 const BUFFER: f32 = 0.01;
 const MAX_ITERATIONS: usize = 100;
 
-pub struct Arm<const S: usize> {
-    segments: [(f32, f32); S],
+pub struct Arm {
+    segments: Vec<(f32, f32)>,
 }
 
-impl<const S: usize> Arm<S> {
-    pub fn new(segments: [f32; S]) -> Self {
+impl Arm {
+    pub fn new<I>(segments: I) -> Self
+    where
+        I: IntoIterator<Item = f32>,
+    {
         Self {
-            segments: segments.map(|l| (0.0, l)),
+            segments: segments.into_iter().map(|l| (0.0, l)).collect(),
         }
     }
 
@@ -18,9 +24,21 @@ impl<const S: usize> Arm<S> {
         }
     }
 
-    pub fn segments(&self) -> &[(f32, f32); S] {
+    pub fn segments(&self) -> &Vec<(f32, f32)> {
         &self.segments
     }
+
+    pub fn segments_degrees(&self) -> Vec<(f32, f32)> {
+        self.segments.iter().map(|(rad, length)| (rad / PI * 180., *length)).collect()
+    }
+
+	pub fn push_segment(&mut self, length: f32) {
+		self.segments.push((0., length));
+	}
+
+	pub fn pop_segment(&mut self) {
+		self.segments.pop();
+	}
 
     pub fn forward_kinematics(&self) -> Vec<(f32, f32)> {
         let mut positions = vec![(0., 0.)];
